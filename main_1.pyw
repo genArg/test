@@ -252,6 +252,7 @@ class Grafica(Frame):
       color_boton = '#546981'
       fondo_etiqueta = '#1a2d45'
       color_letra = '#FBFBFB'
+      color_test = '#ce1ee1'
 
       ## define los frames en lo que se divide la interface grafica
       frame = Frame(self.master, bg=color_fondo, bd=4)
