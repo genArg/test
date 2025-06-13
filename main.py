@@ -43,7 +43,7 @@ class Grafica(Frame):
       self.master.columnconfigure(1, weight=1)
       self.master.columnconfigure(2, weight=1)
       ## establece los tamaños relatitivos de ecpancion de las filas
-      self.master.rowconfigure(0, weight=5)
+      self.master.rowconfigure(0, weight=10)
       self.master.rowconfigure(1, weight=1)
       self.master.rowconfigure(2, weight=1)
       self.master.rowconfigure(3, weight=1)
@@ -71,18 +71,21 @@ class Grafica(Frame):
       self.valor_actual_1_t.grid(row=0, column=0, padx=5, pady=5)
 
 
-      # define un boton
-      
-      self.bt_iniciar = Button(self.frame_c, text='conectar_serial', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.conectar_serial)
-      self.bt_iniciar.grid(row=2, column=0, pady=5)
+            ## extrae informacion de puertos y velocidades
+      baud = self.datos_placa.baudrates
+      self.combobox_baud = ttk.Combobox(self.frame_a, values=baud, justify='center', width=12, font='Arial')
+      self.combobox_baud.grid(row=0, column=1, padx=5, pady=5, sticky='nsew')
+      self.combobox_baud.current(3)
+      try:
+         port = self.datos_placa.puertos
+         self.combobox_port = ttk.Combobox(self.frame_a, values=port, justify='center', width=12, font='Arial')
+         self.combobox_port.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+         self.combobox_port.current(0)
+      except:
+         pass
 
-      # define botones para accder a las diferentes parametros de pozos
-      fuente = ('Arial', 12, 'bold')
-      ancho_boton = 10
-      self.bt_p1 = Button(self.frame_1, text='Pozo 1', font=fuente, width=ancho_boton, bg=color_boton, fg=color_letra)
-      self.bt_p1.grid(row=0, column=0, padx=0, pady=0, sticky='nsew')
-
-
+      self.bt_conectar = Button(self.frame_a, text='conectar_serial', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.conectar_serial)
+      self.bt_conectar.grid(row=0, column=2, pady=5)
 
       # Crea un hilo para majar la parte logica del almacenamiento de los datos
    
@@ -90,6 +93,32 @@ class Grafica(Frame):
    ## define un metodo que se ejecuta al pulsar el boton
    def conectar_serial(self):
       None
+
+   def pozo_accion(self, i, j):
+       print(f"Hola desde el pozo {i},{j}")
+       pass
+   
+   def conectar_serial(self):
+      self.datos_placa.placa.port = self.combobox_port.get()
+      self.datos_placa.placa.baudrate = self.combobox_baud.get()
+      self.datos_placa.conexion_serial()
+      print(f"Conectando a {self.datos_placa.placa.port} a {self.datos_placa.placa.baudrate} baudios")
+      self.configurar_modem()
+
+   def configurar_modem(self):
+      try:
+          modem = self.datos_placa.placa  # Este es tu serial.Serial
+          if not modem.is_open:
+              self.valor_actual_1_t.config(text="Puerto cerrado")
+              return
+
+          modem.write(b'AT+CMGF=1\r')  # Configura el modo de mensaje de texto
+          time.sleep(0.5)  # Espera un poco para que el comando se procese
+          modem.write(b'AT+CNMI=2,1,0,0,0\r')  # Configura la notificación de nuevos mensajes
+          time.sleep(0.5)  # Espera un poco para que el comando se procese
+          self.valor_actual_1_t.config(text="Modem configurado")
+      except Exception as e:
+          self.valor_actual_1_t.config(text=f"Error: {str(e)}")
 
 ### Inicia el bucle principal
 if __name__ == "__main__":
