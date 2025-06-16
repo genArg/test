@@ -37,7 +37,7 @@ def crear_frames(self):
       self.frame_b = Frame(self.master, bg=color_fondo_titulo_2, bd=0, relief=borde_tipo)
       self.frame_b.grid(column=1, row=0, sticky='nsew')
 
-      self.frame_c = Frame(self.master, bg=color_fondo_titulo_2, bd=0, relief=borde_tipo)
+      self.frame_c = Frame(self.master, bg=color_test_4, bd=0, relief=borde_tipo)
       self.frame_c.grid(column=2, row=0, sticky='nsew')
 
       # se crean botones para accder a la informacion de los pozos
