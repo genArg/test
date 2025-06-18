@@ -45,9 +45,9 @@ class Comunicacion():
           while (self.señal.isSet() and self.placa.is_open): #Se ejecuta constantemente la instruccion de leer la señal, con el while
               linea_1 = self.placa.readline().decode("utf-8").strip() #Con "data" leemos los datos del placa y con "decode" decodificamos
               linea_2 = self.placa.readline().decode("utf-8").strip()
-              data = linea_1 + ',' + linea_2
-              if(len(data)>1): #Verificamos que se haya recibido el dato
-                  self.datos_recibidos=data #Se lo asignamos a la variable data
+              if(len(linea_1)>1 | len(linea_2)>1): #Verificamos que se haya recibido el dato
+                  self.datos_recibidos_1 = linea_1
+                  self.datos_recibidos_2 = linea_2
                   self.recibida.set() #Activa la bandera al recibir una trama
       except TypeError:
           pass

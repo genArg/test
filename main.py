@@ -150,9 +150,23 @@ class Grafica(Frame):
          self.datos_placa.recibida.clear() #Limpia el evento
          self.datos_placa.recibida.wait() #Espera a que se active el evento nuevamente
 
-         self.datos = self.datos_placa.datos_recibidos # guarda el texto obtenido en una variable
-         self.valor_actual_1_t.config(text=self.datos)
-         print(self.datos)  # Imprime los datos recibidos en la consola
+         self.datos_1 = self.datos_placa.datos_recibidos_1 # guarda el texto obtenido en una variable
+         self.datos_2 = self.datos_placa.datos_recibidos_2
+         self.valor_actual_1_t.config(text=self.datos_1)
+         print(self.datos_1)  # Imprime los datos recibidos en la consola
+         print(self.datos_2)
+
+         dato = self.datos_1.split('"')  # Divide los datos en una lista usando la coma como separador
+         #identificador = dato[0].split('"')  # Divide el primer elemento en dos partes usando el ':' como separador
+
+
+         try:
+            self.identificacion_alfa = dato[1]            
+            self.valor_actual_2_t.config(text=self.datos_2) # se muestra el texto en la etiqueta
+            if (self.identificacion_alfa == '+5493815465274'):
+               self.boton[1][0].config(bg='#FF0000')  # Cambia el color del botón a rojo
+         except:
+            pass
 
    ## define un metodo para establece la localizacion mediante google maps
    def localizar(self):
