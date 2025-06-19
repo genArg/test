@@ -178,6 +178,8 @@ class Grafica(Frame):
       webbrowser.open(url)
       pass
 
+
+
 ### Inicia el bucle principal
 if __name__ == "__main__":
    terminal = Tk()
