@@ -25,6 +25,7 @@ color_naranja = '#FFA500'
 color_negro = '#000000'
 color_blanco = '#FFFFFF'
 color_verde = '#00FF00'
+color_gris = '#505050'
 # velocidad de la comunicacion serial
 velocidad = 115200
 # comando para filtrar mensajes
@@ -42,6 +43,9 @@ class Grafica(Frame):
       super().__init__(master, *args)
       ## en esta seccion se definen clases que se van a utilizar en el resto del codigo  
       # 
+      self.puerto_usado = "none_2"
+      # Define el una variable para actualizar los botones medido en segundos
+      self.tiempo_muerto_1 = 0
       #Variable para establecer el tiempo de refresco de los pozos
       self.tiempo_refresco = IntVar()
 
@@ -131,7 +135,7 @@ class Grafica(Frame):
       self.bt_conectar = Button(self.frame_a, text='Establecer Conexion', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.ConectarPlaca)
       self.bt_conectar.grid(row=0, column=1, pady=5)
 
-      self.lb_indicador_conexion = Label(self.frame_a, text=" ", font=('Arial', 12, 'bold'), bg=color_blanco)
+      self.lb_indicador_conexion = Label(self.frame_a, text="●", font=('Arial', 25, 'bold'), fg=color_gris, bg=color_fondo)
       self.lb_indicador_conexion.grid(row=0, column=2, padx=5, pady=5)
 
       # Crea un una caja para establecer el tiempo de refresco de los pozos
@@ -175,30 +179,36 @@ class Grafica(Frame):
          self.bit_un_segundo = not self.bit_un_segundo
          self.contador_n_segundo += 1
          self.contador_pozos += 1
-         if self.contador_pozos == 60:
+         if self.contador_pozos == 11:
             self.contador_pozos = 0
-            self.refrescar_pozos()  # Llama a la función para refrescar los pozos cada 60 segundos            
+            self.refrescar_pozos()  # Llama a la función para refrescar los pozos cada 60 segundos
+            print(self.estados_pozos)            
          if self.contador_n_segundo == n:
             self.bit_n_segundo = not self.bit_n_segundo
             self.contador_n_segundo = 0
+         self.tiempo_muerto_1 += 1
+         if self.tiempo_muerto_1 > 9:
+            self.tiempo_muerto_1 = 0
 
          
    ## define un metodo que se ejecuta en un hilo principal
    def HiloPrincipal(self):
 
       while (self.gsm.is_open):
-         respuesta = self.leer_mensajes()
-         if respuesta == True:
+         respuesta_interna = self.leer_mensajes()
+         if respuesta_interna == True:
             self.borrar_mensajes()
          time.sleep(5)  # Espera 5 segundos antes de volver a leer los mensajes
       self.gsm.close()  # Cierra el puerto serial cuando se detiene el hilo
 
+   ## metodo para conectarse al modulo gsm
    def conectar_serial(self):
         """Conecta al puerto serial y configura el módem GSM."""
         try:
             # Configura el puerto y la velocidad
             self.gsm = serial.Serial(self.combobox_port.get(), int(velocidad), timeout=1)
             time.sleep(1)  # Espera un poco para que el módem arranque
+            self.puerto_usado = self.combobox_port.get()
 
             # Configura el modo texto para SMS
             print("Configurando modo texto...")
@@ -219,7 +229,10 @@ class Grafica(Frame):
 
         except Exception as e:
             print(f"Error al conectar: {e}")
-            
+            self.combobox_port.set('')  # Limpia la selección si no hay puertos
+            port = [port.device for port in serial.tools.list_ports.comports()]
+            self.combobox_port.configure(values=port) # = ttk.Combobox(self.frame_a, values=port, justify='center', width=12, font='Arial')
+
 
       ## Envia un comando al módem GSM y espera una respuesta
    def enviar_comando(self, comando, espera=1):
@@ -231,14 +244,16 @@ class Grafica(Frame):
    def leer_mensajes(self):
       # Lee todos los SMS almacenados
       retorno = False
+      respuesta_interna = "none_1"
       print("Leyendo SMS...")
       try:
-         respuesta = self.enviar_comando('AT+CMGL="ALL"', espera=2)  # Lee todos los mensajes de la SIM
+         respuesta_interna = self.enviar_comando('AT+CMGL="ALL"', espera=2)  # Lee todos los mensajes de la SIM
+         print(respuesta_interna)
+         print(len(respuesta_interna))
       except Exception as e:
          print(f"Error al leer mensajes: {e}")
-      if len(respuesta) > 2:
-         retorno = self.logica_filtro_mensaje(respuesta)  # Llama a la función para procesar los mensajes
-         print(respuesta)
+      if len(respuesta_interna) > 4:
+         retorno = self.logica_filtro_mensaje(respuesta_interna)  # Llama a la función para procesar los mensajes
       return retorno
 
    ## Borra los mensajes de la SIM
@@ -258,8 +273,8 @@ class Grafica(Frame):
          if linea.startswith(comando):
             dato = linea.split(".")
             self.lista_pozos.append([dato[1], dato[4]])  # Agrega el pozo a la lista
-            print(self.lista_pozos)
-         retorno = True
+            self.estados_pozos[int(dato[1])-1] = 0 - 1 - int(dato[4])
+            retorno = True
       
       return retorno
 
@@ -269,25 +284,49 @@ class Grafica(Frame):
       """Actualiza los estados de los elementos en la interfaz gráfica."""
       while self.gsm.is_open :
          time.sleep(5)  # Espera 5 segundos antes de actualizar los estados
-         # Aquí puedes actualizar las etiquetas o botones según el estado de los pozos
-         if self.lista_pozos:
-            for pozo in self.lista_pozos:
-               i = int(pozo[0])
-               estado = int(pozo[1])
-               j=0
-               (i,j) = self.logica_separacion_argunmentos(i)
-               if estado == 0: 
-                  try:
-                     self.boton[int(i)][int(j)].config(bg=color_rojo)
-                  except IndexError:
-                     print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
-                     continue
-               elif estado == 1:
-                  try:
-                     self.boton[int(i)][int(j)].config(bg=color_verde)
-                  except IndexError:
-                     print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
-                     continue
+         #if self.tiempo_muerto_1 == 0 or self.tiempo_muerto_1 ==5:
+         for indice in range(len(self.estados_pozos)):
+            (i,j) = self.logica_separacion_argunmentos(indice + 1)
+            if self.estados_pozos[indice] == (-2):
+               self.boton[int(i)][int(j)].config(bg=color_verde)
+               self.estados_pozos[indice] = self.tiempo_muerto_1
+            if self.estados_pozos[indice] == (-1):
+               self.boton[int(i)][int(j)].config(bg=color_rojo)
+               #self.estados_pozos[indice] = self.tiempo_muerto_1
+            if self.estados_pozos[indice] == 0:
+               self.boton[int(i)][int(j)].config(bg=color_naranja)
+         '''if True:
+
+            # Aquí puedes actualizar las etiquetas o botones según el estado de los pozos
+            if self.lista_pozos:
+               for pozo in self.lista_pozos:
+                  print(self.lista_pozos)
+                  i = int(pozo[0])
+                  estado = int(pozo[1])
+                  j=0
+                  (i,j) = self.logica_separacion_argunmentos(i)
+                  if estado == 0: 
+                     try:
+                        self.boton[int(i)][int(j)].config(bg=color_rojo)
+                     except IndexError:
+                        print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
+                        continue
+                  elif estado == 1:
+                     try:
+                        self.boton[int(i)][int(j)].config(bg=color_verde)
+                     except IndexError:
+                        print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
+                        continue'''
+         
+         if (self.tiempo_muerto_1 % 3) == 0:
+            puertos_disponibles = [p.device for p in serial.tools.list_ports.comports()]
+            if self.puerto_usado in puertos_disponibles:
+               self.lb_indicador_conexion.config(fg=color_verde)
+            else:
+               self.gsm.close()
+               self.lb_indicador_conexion.config(fg=color_rojo)
+
+   
 
 
    ## define un metodo para establece la localizacion mediante google maps
@@ -315,8 +354,9 @@ class Grafica(Frame):
             self.estados_pozos[i] -= 1
          elif self.estados_pozos[i] == 0:
             try:
-               (i,j) = self.logica_separacion_argunmentos(i+1)
-               self.boton[int(i)][int(j)].config(bg=color_rojo)
+               None
+              # (i,j) = self.logica_separacion_argunmentos(i+1)
+              # self.boton[int(i)][int(j)].config(bg=color_naranja)
             except IndexError:
                print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
                continue
