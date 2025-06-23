@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame, Button, Label, ttk, PhotoImage, StringVar, Entry
+from tkinter import IntVar, Tk, Frame, Button, Label, ttk, PhotoImage, StringVar, Entry
 import serial, serial.tools.list_ports #Nos permite reconocer los puertos disponibles
 import time
 import grafica_terminal
@@ -24,10 +24,13 @@ color_rojo = '#FF0000'
 color_naranja = '#FFA500'
 color_negro = '#000000'
 color_blanco = '#FFFFFF'
+color_verde = '#00FF00'
 # velocidad de la comunicacion serial
 velocidad = 115200
 # comando para filtrar mensajes
 comando = "Tx"
+# tiempo de refresco de pozos en minutos
+tiempo_refresco_pozos = 3
 
 n = 3 # Número de segundos para cambiar el bit_n_segundo
 
@@ -39,15 +42,23 @@ class Grafica(Frame):
       super().__init__(master, *args)
       ## en esta seccion se definen clases que se van a utilizar en el resto del codigo  
       # 
+      #Variable para establecer el tiempo de refresco de los pozos
+      self.tiempo_refresco = IntVar()
+
       ## bit de tiempo
       self.bit_un_segundo = 0
       self.bit_n_segundo = 0
       self.contador_n_segundo = 0
 
+      # vector de estados de los pozos
+      self.estados_pozos = [tiempo_refresco_pozos] * 60
+      self.contador_pozos = 0
+
       self.lista_pozos = []  # Lista para almacenar los pozos
 
       #self.datos_placa.recibida.clear() #Se limpia el evento del hilo principal por primera vez
       self.widgets()    ## Se llama al metodo que confugura la interface grafica
+
 
     
     ##
@@ -110,14 +121,27 @@ class Grafica(Frame):
       try:
          port = [port.device for port in serial.tools.list_ports.comports()]
          self.combobox_port = ttk.Combobox(self.frame_a, values=port, justify='center', width=12, font='Arial')
-         self.combobox_port.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+         self.combobox_port.grid(row=0, column=0, padx=5, pady=5)
          self.combobox_port.current(0)
       except:
          print("No se encontraron puertos disponibles.")
          pass
 
-      self.bt_conectar = Button(self.frame_a, text='conectar_serial', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.ConectarPlaca)
-      self.bt_conectar.grid(row=0, column=2, pady=5)
+      # Crea un boton para conectar al módem GSM
+      self.bt_conectar = Button(self.frame_a, text='Establecer Conexion', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.ConectarPlaca)
+      self.bt_conectar.grid(row=0, column=1, pady=5)
+
+      self.lb_indicador_conexion = Label(self.frame_a, text=" ", font=('Arial', 12, 'bold'), bg=color_blanco)
+      self.lb_indicador_conexion.grid(row=0, column=2, padx=5, pady=5)
+
+      # Crea un una caja para establecer el tiempo de refresco de los pozos
+      self.tiempo_refresco.set(tiempo_refresco_pozos)  # Valor entero por defecto
+      self.box_tiempo_refresco=Entry(self.frame_a, textvariable=self.tiempo_refresco, font=('Arial', 12, 'bold'), width=5)
+      self.box_tiempo_refresco.grid(row=1, column=0, padx=1, pady=5)
+
+      # Crea un boton para guardar el valor del tiempo de refresco
+      self.bt_guardar = Button(self.frame_a, text='Actualizar', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.refrescar_pozos_accion)
+      self.bt_guardar.grid(row=1, column=1, pady=5)
 
       self.Iniciar_Temporizadores()  ## Crea los temporizadores para el control de tiempo
 
@@ -125,24 +149,20 @@ class Grafica(Frame):
 
    def CrearHilo(self):
       
-      hilo_principal = threading.Thread(target=self.HiloPrincipal)
-      hilo_principal.setDaemon(1)
+      hilo_principal = threading.Thread(target=self.HiloPrincipal, daemon=True)
       hilo_principal.start() #Inicia el hilo principal
 
    def CrearHilo_2(self):
       """Crea un hilo para manejar la lógica de actualización de estados."""
-      hilo_actualizacion = threading.Thread(target=self.actualizar_estados)
-      hilo_actualizacion.setDaemon(1)
+      hilo_actualizacion = threading.Thread(target=self.actualizar_estados, daemon=True)
       hilo_actualizacion.start()
 
    def ConectarPlaca(self):
-      hilo_conexion = threading.Thread(target=self.conectar_serial)
-      hilo_conexion.setDaemon(1)
+      hilo_conexion = threading.Thread(target=self.conectar_serial, daemon=True)
       hilo_conexion.start()
 
    def Iniciar_Temporizadores(self):
-      hilo_temporizador = threading.Thread(target=self.temporizadores)
-      hilo_temporizador.setDaemon(1)
+      hilo_temporizador = threading.Thread(target=self.temporizadores, daemon=True)
       hilo_temporizador.start()
 
    ## define un metodo que ejecuta un temporizador cada n segundos
@@ -151,9 +171,13 @@ class Grafica(Frame):
       global n
       self.contador_n_segundo = 0
       while True:
-         time.sleep(1)
+         time.sleep(0.5)
          self.bit_un_segundo = not self.bit_un_segundo
          self.contador_n_segundo += 1
+         self.contador_pozos += 1
+         if self.contador_pozos == 60:
+            self.contador_pozos = 0
+            self.refrescar_pozos()  # Llama a la función para refrescar los pozos cada 60 segundos            
          if self.contador_n_segundo == n:
             self.bit_n_segundo = not self.bit_n_segundo
             self.contador_n_segundo = 0
@@ -231,12 +255,11 @@ class Grafica(Frame):
       retorno = False
       # Muestra los mensajes
       for linea in mensaje:
-         #if 'Tx.1.D.1.1' == linea:
          if linea.startswith(comando):
             dato = linea.split(".")
             self.lista_pozos.append([dato[1], dato[4]])  # Agrega el pozo a la lista
             print(self.lista_pozos)
-            retorno = True
+         retorno = True
       
       return retorno
 
@@ -249,26 +272,23 @@ class Grafica(Frame):
          # Aquí puedes actualizar las etiquetas o botones según el estado de los pozos
          if self.lista_pozos:
             for pozo in self.lista_pozos:
-               i = int(pozo[0]) 
+               i = int(pozo[0])
                estado = int(pozo[1])
-               if estado:
+               j=0
+               (i,j) = self.logica_separacion_argunmentos(i)
+               if estado == 0: 
                   try:
-                     if i == 20 or i == 40 or i == 60:
-                        j = (i // 20) - 1
-                        i = 20
-                     elif i > 0 and i < 60:
-                        j = 0
-                        j = i // 20  # Ajusta el índice para la columna
-                        i = i - j * 20  # Ajusta el índice para la fila
-                     
-                  except IndexError:  
-                     print(f"Índice fuera de rango: {i}, {j}")
-                     continue
-                  print(f"Actualizando estado del pozo {i} en la columna {j} con estado {estado}")
-                  if self.bit_un_segundo:
                      self.boton[int(i)][int(j)].config(bg=color_rojo)
-                  else:
-                     self.boton[int(i)][int(j)].config(bg=color_naranja)
+                  except IndexError:
+                     print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
+                     continue
+               elif estado == 1:
+                  try:
+                     self.boton[int(i)][int(j)].config(bg=color_verde)
+                  except IndexError:
+                     print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
+                     continue
+
 
    ## define un metodo para establece la localizacion mediante google maps
    def localizar(self):
@@ -284,6 +304,49 @@ class Grafica(Frame):
    def pozo_accion(self, i, j):
        print(f"Hola desde el pozo {i},{j}")
        pass
+   
+   ## metodo para refrescar los pozos
+   def refrescar_pozos(self):
+      #resta uno a todos los estados de los pozos
+      i = 0
+      j = 0
+      for i in range(len(self.estados_pozos)):
+         if self.estados_pozos[i] > 0:
+            self.estados_pozos[i] -= 1
+         elif self.estados_pozos[i] == 0:
+            try:
+               (i,j) = self.logica_separacion_argunmentos(i+1)
+               self.boton[int(i)][int(j)].config(bg=color_rojo)
+            except IndexError:
+               print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
+               continue
+
+   ## define un metodo que se ejecuta al pulsar el boton de refrescar pozos
+   def refrescar_pozos_accion(self):
+      print("Refrescando pozos...")
+      global tiempo_refresco_pozos
+      tiempo_refresco_pozos = self.tiempo_refresco.get()  # Obtiene el valor del tiempo de refresco
+      actualizar = [tiempo_refresco_pozos] * 60  # Crea una lista con el nuevo tiempo de refresco
+      self.estados_pozos = actualizar  # Actualiza los estados de los pozos
+      pass
+
+
+   def logica_separacion_argunmentos(self, i):
+      j = 1
+      try:
+         if i == 20 or i == 40 or i == 60:
+            j = (i // 20) - 1
+            i = 20
+         elif i > 0 and i < 60:
+            j = 0
+            j = i // 20  # Ajusta el índice para la columna
+            i = i - j * 20  # Ajusta el índice para la fila
+      except ZeroDivisionError:
+         print("Error: División por cero al calcular los índices.")
+         return (0, 0)
+      return (i, j)  # Devuelve los índices ajustados
+                     
+
 
 
 ### Inicia el bucle principal
