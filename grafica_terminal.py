@@ -27,6 +27,7 @@ def crear_frames(self):
 'groove' (bordes biselados hacia adentro)
 
 'solid' (borde plano y definido, el que simula un contorno visible)'''
+      self.texto_prueba = ["funciona"] * 60
 
         # Crea los frames con los colores definidos
       
@@ -44,10 +45,11 @@ def crear_frames(self):
       self.boton = [[None for _ in range(3)] for _ in range(21)]
       for j in range(3):
         for i in range(1,21):
+            mensaje = self.mensajes_pozos[i+j*20-1]
             color = color_fondo_1 if i % 2 == 1 else color_fondo_2
             self.boton[i][j] = Button(
                 self.master,
-                text=f'Pozo {i+j*20}',
+                text=f'Pozo {i+j*20} - {mensaje}',
                 bg=color,
                 bd=borde_ancho,
                 relief=borde_tipo,

@@ -59,6 +59,7 @@ class Grafica(Frame):
       # vector de estados de los pozos
       self.estados_pozos = [tiempo_refresco_pozos] * 60
       self.contador_pozos = 0
+      self.mensajes_pozos = ["sin conectar"] * 60
 
       self.lista_pozos = []  # Lista para almacenar los pozos
 
