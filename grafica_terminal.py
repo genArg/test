@@ -31,13 +31,13 @@ def crear_frames(self):
         # Crea los frames con los colores definidos
       
       # frame para demas configuraciones de la interfaz
-      self.frame_a = Frame(self.master, bg=color_fondo_titulo_1, bd=0, relief=borde_tipo)
+      self.frame_a = Frame(self.master, bg=color_fondo_titulo_1, bd=borde_ancho*2, relief=borde_tipo)
       self.frame_a.grid(column=0, row=0, sticky='nsew')
 
-      self.frame_b = Frame(self.master, bg=color_fondo_titulo_2, bd=0, relief=borde_tipo)
+      self.frame_b = Frame(self.master, bg=color_fondo_2, bd=0, relief=borde_tipo)
       self.frame_b.grid(column=1, row=0, sticky='nsew')
 
-      self.frame_c = Frame(self.master, bg=color_test_4, bd=0, relief=borde_tipo)
+      self.frame_c = Frame(self.master, bg=color_fondo_2, bd=0, relief=borde_tipo)
       self.frame_c.grid(column=2, row=0, sticky='nsew')
 
       # se crean botones para accder a la informacion de los pozos

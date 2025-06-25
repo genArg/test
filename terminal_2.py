@@ -6,12 +6,11 @@ import webbrowser
 import threading
 
 # Configuración de la pantalla
-pantalla_ancho = 1366 #742
-pantalla_alto = 768 #535
+pantalla_ancho = 742 #1366
+pantalla_alto = 535 #768
 
 #colores
 color_fondo = '#cedee1'
-color_fondo_2 = '#e8f5e9'
 color_boton = '#546981'
 fondo_etiqueta = '#1a2d45'
 color_letra = '#FBFBFB'
@@ -32,7 +31,7 @@ velocidad = 115200
 # comando para filtrar mensajes
 comando = "Tx"
 # tiempo de refresco de pozos en minutos
-tiempo_refresco_pozos = 6
+tiempo_refresco_pozos = 60
 
 n = 3 # Número de segundos para cambiar el bit_n_segundo
 
@@ -43,7 +42,6 @@ class Grafica(Frame):
    def __init__(self,master, *args):
       super().__init__(master, *args)
       ## en esta seccion se definen clases que se van a utilizar en el resto del codigo  
-      self.imagen = PhotoImage(file="img1.png") # añade una imagen
       # 
       self.puerto_usado = "none_2"
       # Define el una variable para actualizar los botones medido en segundos
@@ -113,18 +111,20 @@ class Grafica(Frame):
 
 
       # Crea una etiqueta que sera modificada por SMS
-      Label(self.frame_a, image=self.imagen).pack(padx=5, expand=1)
-
-      self.tag_1 = Label(self.frame_c, text="----", font=('Arial', 12, 'bold'), bg=color_fondo)
+      self.tag_1 = Label(self.frame_b, text="----", font=('Arial', 12, 'bold'), bg=color_fondo)
       self.tag_1.grid(row=0, column=0, padx=5, pady=5)
-      self.tag_2 = Label(self.frame_c, text="----", font=('Arial', 12, 'bold'), bg=color_fondo_2)
+      self.tag_2 = Label(self.frame_b, text="----", font=('Arial', 12, 'bold'), bg=color_fondo)
       self.tag_2.grid(row=1, column=0, padx=5, pady=5)
+      self.bt_conectar = Button(self.frame_b, text='localizacion', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.localizar)
+      self.bt_conectar.grid(row=2, column=0, pady=5)
+      self.bt_conectar = Button(self.frame_b, text='ejecutar', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.localizar)
+      self.bt_conectar.grid(row=3, column=0, pady=5)
 
 
       ## extrae informacion de puertos
       try:
          port = [port.device for port in serial.tools.list_ports.comports()]
-         self.combobox_port = ttk.Combobox(self.frame_b, values=port, justify='center', width=12, font='Arial')
+         self.combobox_port = ttk.Combobox(self.frame_a, values=port, justify='center', width=12, font='Arial')
          self.combobox_port.grid(row=0, column=0, padx=5, pady=5)
          self.combobox_port.current(0)
       except:
@@ -132,25 +132,20 @@ class Grafica(Frame):
          pass
 
       # Crea un boton para conectar al módem GSM
-      self.bt_conectar = Button(self.frame_b, text='Establecer Conexion', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.ConectarPlaca)
+      self.bt_conectar = Button(self.frame_a, text='Establecer Conexion', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.ConectarPlaca)
       self.bt_conectar.grid(row=0, column=1, pady=5)
 
-      self.lb_indicador_conexion = Label(self.frame_b, text="●", font=('Arial', 25, 'bold'), fg=color_gris, bg=color_fondo_2)
+      self.lb_indicador_conexion = Label(self.frame_a, text="●", font=('Arial', 25, 'bold'), fg=color_gris, bg=color_fondo)
       self.lb_indicador_conexion.grid(row=0, column=2, padx=5, pady=5)
 
       # Crea un una caja para establecer el tiempo de refresco de los pozos
       self.tiempo_refresco.set(tiempo_refresco_pozos)  # Valor entero por defecto
-      self.box_tiempo_refresco=Entry(self.frame_b, textvariable=self.tiempo_refresco, font=('Arial', 12, 'bold'), width=5)
+      self.box_tiempo_refresco=Entry(self.frame_a, textvariable=self.tiempo_refresco, font=('Arial', 12, 'bold'), width=5)
       self.box_tiempo_refresco.grid(row=1, column=0, padx=1, pady=5)
 
       # Crea un boton para guardar el valor del tiempo de refresco
-      self.bt_guardar = Button(self.frame_b, text='Actualizar', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.refrescar_pozos_accion)
+      self.bt_guardar = Button(self.frame_a, text='Actualizar', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.refrescar_pozos_accion)
       self.bt_guardar.grid(row=1, column=1, pady=5)
-
-      self.bt_conectar = Button(self.frame_b, text='localizacion', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.localizar)
-      self.bt_conectar.grid(row=2, column=0, pady=5)
-      #self.bt_conectar = Button(self.frame_b, text='ejecutar', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.localizar)
-      #self.bt_conectar.grid(row=3, column=0, pady=5)
 
       self.Iniciar_Temporizadores()  ## Crea los temporizadores para el control de tiempo
 
@@ -228,19 +223,15 @@ class Grafica(Frame):
             print(self.respuesta)
             print("Conexión exitosa al módem GSM.")
 
-            self.lb_indicador_conexion.config(fg=color_verde)
-            
-
             ## Crea un hilo para majar la parte logica del almacenamiento de los datos
             self.CrearHilo() # Lectura de mensajes en un hilo separado
             self.CrearHilo_2() # Actualización de estados en la interfaz gráfica
 
         except Exception as e:
             print(f"Error al conectar: {e}")
-            self.lb_indicador_conexion.config(fg=color_rojo)
             self.combobox_port.set('')  # Limpia la selección si no hay puertos
             port = [port.device for port in serial.tools.list_ports.comports()]
-            self.combobox_port.configure(values=port) # = ttk.Combobox(self.frame_b, values=port, justify='center', width=12, font='Arial')
+            self.combobox_port.configure(values=port) # = ttk.Combobox(self.frame_a, values=port, justify='center', width=12, font='Arial')
 
 
       ## Envia un comando al módem GSM y espera una respuesta
@@ -293,17 +284,17 @@ class Grafica(Frame):
       """Actualiza los estados de los elementos en la interfaz gráfica."""
       while self.gsm.is_open :
          time.sleep(5)  # Espera 5 segundos antes de actualizar los estados
-         if True: #self.tiempo_muerto_1 == 0:
-            for indice in range(len(self.estados_pozos)):
-               (i,j) = self.logica_separacion_argunmentos(indice + 1)
-               if self.estados_pozos[indice] == (-2):
-                  self.boton[int(i)][int(j)].config(bg=color_verde)
-                  self.estados_pozos[indice] = self.tiempo_muerto_1
-               if self.estados_pozos[indice] == (-1):
-                  self.boton[int(i)][int(j)].config(bg=color_rojo)
-                  #self.estados_pozos[indice] = self.tiempo_muerto_1
-               if self.estados_pozos[indice] == 0:
-                  self.boton[int(i)][int(j)].config(bg=color_naranja)
+         #if self.tiempo_muerto_1 == 0 or self.tiempo_muerto_1 ==5:
+         for indice in range(len(self.estados_pozos)):
+            (i,j) = self.logica_separacion_argunmentos(indice + 1)
+            if self.estados_pozos[indice] == (-2):
+               self.boton[int(i)][int(j)].config(bg=color_verde)
+               self.estados_pozos[indice] = self.tiempo_refresco.get()
+            if self.estados_pozos[indice] == (-1):
+               self.boton[int(i)][int(j)].config(bg=color_rojo)
+               #self.estados_pozos[indice] = self.tiempo_refresco.get()
+            if self.estados_pozos[indice] == 0:
+               self.boton[int(i)][int(j)].config(bg=color_naranja)
          '''if True:
 
             # Aquí puedes actualizar las etiquetas o botones según el estado de los pozos
@@ -327,7 +318,7 @@ class Grafica(Frame):
                         print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
                         continue'''
          
-         if False: #(self.tiempo_muerto_1 % 3) == 0:
+         if (self.tiempo_muerto_1 % 3) == 0:
             puertos_disponibles = [p.device for p in serial.tools.list_ports.comports()]
             if self.puerto_usado in puertos_disponibles:
                self.lb_indicador_conexion.config(fg=color_verde)
@@ -375,7 +366,7 @@ class Grafica(Frame):
       print("Refrescando pozos...")
       global tiempo_refresco_pozos
       tiempo_refresco_pozos = self.tiempo_refresco.get()  # Obtiene el valor del tiempo de refresco
-      actualizar = [tiempo_refresco_pozos] * 60  # Crea una lista con el nuevo tiempo de refresco
+      actualizar = [self.tiempo_refresco.get()] * 60  # Crea una lista con el nuevo tiempo de refresco
       self.estados_pozos = actualizar  # Actualiza los estados de los pozos
       pass
 
@@ -405,6 +396,7 @@ if __name__ == "__main__":
    terminal.config(bg='#010808', bd=4)
    terminal.wm_title('Central de pozos')
    terminal.minsize(width=700, height=400)  # Corregido el nombre de 'minisize' a 'minsize'
-   terminal.call('wm', 'iconphoto', terminal._w, PhotoImage(file='img1.png'))
+   terminal.call('wm', 'iconphoto', terminal._w, PhotoImage(file='img1.png' \
+   ''))
    app = Grafica(terminal)  ## crea un elemento de una clase, en esta se establece el bucle que se va seguir
    app.mainloop()    ## ejecuta la funcion de principal de la clase
