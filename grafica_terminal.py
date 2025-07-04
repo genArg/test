@@ -5,6 +5,7 @@ def crear_frames(self):
       """Define los frames que se van a utilizar en la interfaz gráfica."""
       color_fondo_titulo_1 = '#cedee1'
       color_fondo_titulo_2 = '#ce9ee1'
+      color_fondo_azul = '#00001c'
       color_fondo_1 = '#c8e6c9'
       color_fondo_2 = '#e8f5e9'
       color_test_1 = '#000000'
@@ -32,7 +33,7 @@ def crear_frames(self):
         # Crea los frames con los colores definidos
       
       # frame para demas configuraciones de la interfaz
-      self.frame_a = Frame(self.master, bg=color_fondo_titulo_1, bd=borde_ancho*2, relief=borde_tipo)
+      self.frame_a = Frame(self.master, bg=color_fondo_azul, bd=borde_ancho*2, relief=borde_tipo)
       self.frame_a.grid(column=0, row=0, sticky='nsew')
 
       self.frame_b = Frame(self.master, bg=color_fondo_2, bd=0, relief=borde_tipo)
@@ -53,7 +54,7 @@ def crear_frames(self):
                 bg=color,
                 bd=borde_ancho,
                 relief=borde_tipo,
-                font=('Arial', 10),
+                font=('Arial', 8),
                 command=lambda i=i, j=j: self.pozo_accion(i, j)  # Asigna una función de acción al botón
             )
             self.boton[i][j].grid(column=j, row=i, sticky='nsew')

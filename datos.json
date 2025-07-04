@@ -1,0 +1,122 @@
+[
+  {
+    "nombre": "Pozo 1",
+    "lat": -26.8241,
+    "lng": -65.2226,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 2",
+    "lat": -26.83,
+    "lng": -65.23,
+    "estado": "En mantenimiento"
+  },
+  {
+    "nombre": "Pozo 3",
+    "lat": -26.815,
+    "lng": -65.21,
+    "estado": "Emergencia"
+  },
+  {
+    "nombre": "Pozo 4",
+    "lat": -26.8221,
+    "lng": -65.2326,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 5",
+    "lat": -26.843558,
+    "lng": -65.230481,
+    "estado": "Emergencia"
+  },
+  {
+    "nombre": "Pozo 6",
+    "lat": -26.800217,
+    "lng": -65.259959,
+    "estado": "En mantenimiento"
+  },
+  {
+    "nombre": "Pozo 7",
+    "lat": -26.802519,
+    "lng": -65.193071,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 8",
+    "lat": -26.859762,
+    "lng": -65.237395,
+    "estado": "En mantenimiento"
+  },
+  {
+    "nombre": "Pozo 9",
+    "lat": -26.81935,
+    "lng": -65.187752,
+    "estado": "En mantenimiento"
+  },
+  {
+    "nombre": "Pozo 10",
+    "lat": -26.80626,
+    "lng": -65.190653,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 11",
+    "lat": -26.842794,
+    "lng": -65.294613,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 12",
+    "lat": -26.81561,
+    "lng": -65.25867,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 13",
+    "lat": -26.806691,
+    "lng": -65.248355,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 14",
+    "lat": -26.853723,
+    "lng": -65.229336,
+    "estado": "Emergencia"
+  },
+  {
+    "nombre": "Pozo 15",
+    "lat": -26.785686,
+    "lng": -65.230786,
+    "estado": "Inactivo"
+  },
+  {
+    "nombre": "Pozo 16",
+    "lat": -26.846389,
+    "lng": -65.188558,
+    "estado": "Emergencia"
+  },
+  {
+    "nombre": "Pozo 17",
+    "lat": -26.793743,
+    "lng": -65.27785,
+    "estado": "Emergencia"
+  },
+  {
+    "nombre": "Pozo 18",
+    "lat": -26.791585,
+    "lng": -65.171473,
+    "estado": "En mantenimiento"
+  },
+  {
+    "nombre": "Pozo 19",
+    "lat": -26.868964,
+    "lng": -65.236589,
+    "estado": "Activo"
+  },
+  {
+    "nombre": "Pozo 20",
+    "lat": -26.813596,
+    "lng": -65.248355,
+    "estado": "Emergencia"
+  }
+]

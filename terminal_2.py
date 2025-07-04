@@ -4,14 +4,14 @@ import time
 import grafica_terminal
 import webbrowser
 import threading
-import os
 
 # Configuración de la pantalla
 pantalla_ancho = 742 #1366
 pantalla_alto = 535 #768
 
-#colores
-color_fondo = '#cedee1'
+#colores 
+color_fondo = '#e8f5e9'
+color_fondo_azul = '#00001c'
 color_boton = '#546981'
 fondo_etiqueta = '#1a2d45'
 color_letra = '#FBFBFB'
@@ -27,7 +27,7 @@ color_negro = '#000000'
 color_blanco = '#FFFFFF'
 color_verde = '#00FF00'
 color_gris = '#505050'
-# velocidad de la comunicacion serial
+# velocidad de la comunicacion serial e8f5e9
 velocidad = 115200
 # comando para filtrar mensajes
 comando = "Tx"
@@ -44,8 +44,8 @@ class Grafica(Frame):
       super().__init__(master, *args)
       ## en esta seccion se definen clases que se van a utilizar en el resto del codigo  
 # ✅ añade variable grafica
-      self.imagen = PhotoImage(file="img1.png") # añade una imagen
-      self.imagen_2 = PhotoImage(file="img1.png") # añade una imagen
+      self.imagen = PhotoImage(file="img2.png") # añade una imagen
+      #self.imagen_2 = PhotoImage(file="img1.png") # añade una imagen
       # 
       self.puerto_usado = "none_2"
       # Define el una variable para actualizar los botones medido en segundos
@@ -116,13 +116,17 @@ class Grafica(Frame):
 
 
       # Crea una etiqueta que sera modificada por SMS
-      Label(self.frame_a, image=self.imagen).grid(row=0, column=0, padx=5)
-      Label(self.frame_a, image=self.imagen_2).grid(row=0, column=1, padx=5)
+      self.frame_a.grid_columnconfigure(0, weight=1)
+      self.frame_a.grid_columnconfigure(1, weight=1)
+      self.frame_a.grid_columnconfigure(2, weight=1)
 
-      self.tag_1 = Label(self.frame_c, text="----", font=('Arial', 12, 'bold'), bg=color_fondo)
-      self.tag_1.grid(row=0, column=0, padx=5, pady=5)
-      self.bt_conectar = Button(self.frame_c, text='ejecutar', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.localizar)
-      self.bt_conectar.grid(row=3, column=0, pady=5)
+      Label(self.frame_a, image=self.imagen, bd=0).grid(row=0, column=1)
+      #Label(self.frame_a, image=self.imagen_2).grid(row=0, column=1, padx=5)
+
+      #self.tag_1 = Label(self.frame_c, text="----", font=('Arial', 12, 'bold'), bg=color_fondo)
+      #self.tag_1.grid(row=0, column=0, padx=5, pady=5)
+      #self.bt_conectar = Button(self.frame_c, text='ejecutar', font=('Arial', 12, 'bold'),width=12, bg=color_boton, fg=color_letra, command=self.localizar)
+      ##self.bt_conectar.grid(row=3, column=0, pady=5)
 
 
 
@@ -231,16 +235,20 @@ class Grafica(Frame):
             print(self.respuesta)
             print("Conexión exitosa al módem GSM.")
 
+            self.lb_indicador_conexion.config(fg=color_verde)
+            self.refrescar_pozos_accion()
+
             ## Crea un hilo para majar la parte logica del almacenamiento de los datos
             self.CrearHilo() # Lectura de mensajes en un hilo separado
             self.CrearHilo_2() # Actualización de estados en la interfaz gráfica
 
         except Exception as e:
             print(f"Error al conectar: {e}")
+            self.lb_indicador_conexion.config(fg=color_rojo)
             self.combobox_port.set('')  # Limpia la selección si no hay puertos
             port = [port.device for port in serial.tools.list_ports.comports()]
             self.combobox_port.configure(values=port) # = ttk.Combobox(self.frame_a, values=port, justify='center', width=12, font='Arial')
-
+            
 
       ## Envia un comando al módem GSM y espera una respuesta
    def enviar_comando(self, comando, espera=1):
@@ -278,14 +286,16 @@ class Grafica(Frame):
       
       retorno = False
       # Muestra los mensajes
+      indice=0
       for linea in mensaje:
+         indice += 1
          if linea.startswith(comando):
             dato = linea.split(".")
             self.lista_pozos.append([dato[1], dato[4]])  # Agrega el pozo a la lista
             self.estados_pozos[int(dato[1])-1] = 0 - 1 - int(dato[4])
 # ✅ gurada la hora y fecha en el boton del pozo            
             try:
-               self.mensajes_pozos[int(dato[1])-1] = mensaje[linea-1]
+               self.mensajes_pozos[int(dato[1])-1] = mensaje[indice-2]
             except IndexError:
                print(f"no se almaceno el estado.")
                continue
@@ -338,7 +348,7 @@ class Grafica(Frame):
                         self.boton[int(i)][int(j)].config(bg=color_verde)
                      except IndexError:
                         print(f"Error: Índice fuera de rango para el pozo {i},{j}. Verifica los datos recibidos.")
-                        continue'''
+                        continue
          
          if (self.tiempo_muerto_1 % 3) == 0:
             puertos_disponibles = [p.device for p in serial.tools.list_ports.comports()]
@@ -346,7 +356,7 @@ class Grafica(Frame):
                self.lb_indicador_conexion.config(fg=color_verde)
             else:
                self.gsm.close()
-               self.lb_indicador_conexion.config(fg=color_rojo)
+               self.lb_indicador_conexion.config(fg=color_rojo)'''
 
    
 
@@ -354,7 +364,7 @@ class Grafica(Frame):
    ## define un metodo para establece la localizacion mediante google maps
    def localizar(self):
       print("Localizando...")
-      self.tag_1.config(text="Localizando...")
+      #self.tag_1.config(text="Localizando...")
       # URL de Google Maps
       url = 'https://maps.app.goo.gl/XuEL6btjdLmpPGTL9'
       # Abre la URL en el navegador predeterminado
@@ -414,13 +424,14 @@ class Grafica(Frame):
 ### Inicia el bucle principal
 if __name__ == "__main__":
    terminal = Tk()
+   terminal.state('zoomed')  # Maximiza la ventana en Windows
    terminal.geometry(f"{pantalla_ancho}x{pantalla_alto}")#('1366x768')    #('742x535')
    terminal.config(bg='#010808', bd=4)
-   terminal.wm_title('Central de pozos')
+   terminal.wm_title('Central de pozos - Proyecto SAT')
    terminal.minsize(width=700, height=400)  # Corregido el nombre de 'minisize' a 'minsize'
    terminal.call('wm', 'iconphoto', terminal._w, PhotoImage(file='img1.png'))
    # Usa archivo .ico para que se vea en la barra de tareas de Windows
-   terminal.iconbitmap("icono.ico")
+   #terminal.iconbitmap("icono.ico")
 
    
    app = Grafica(terminal)  ## crea un elemento de una clase, en esta se establece el bucle que se va seguir
