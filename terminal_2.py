@@ -4,6 +4,7 @@ import time
 import grafica_terminal
 import webbrowser
 import threading
+from actualizar_json import convertir_vector
 
 # Configuración de la pantalla
 pantalla_ancho = 742 #1366
@@ -327,6 +328,11 @@ class Grafica(Frame):
                self.boton[int(i)][int(j)].config(text=f'Pozo {i + j*20} - {mensaje}')
             if self.estados_pozos[indice] == 0:
                self.boton[int(i)][int(j)].config(bg=color_naranja)
+         try:      
+            convertir_vector(self.estados_pozos)
+         except IndexError:
+               print(f"Error: No se pudo enviar el vector de estados.")
+               continue
          '''if True:
 
             # Aquí puedes actualizar las etiquetas o botones según el estado de los pozos

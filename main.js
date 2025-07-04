@@ -40,10 +40,10 @@ function actualizarPozos() {
             color = "yellow";
             break;
           case "Inactivo":
-            color = "red";
+            color = "orange";
             break;
           case "Emergencia":
-            color = "orange";
+            color = "red";
             break;
           default:
             color = "green";
