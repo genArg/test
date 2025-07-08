@@ -51,7 +51,7 @@
     "nombre": "Pozo 9",
     "lat": -26.81935,
     "lng": -65.187752,
-    "estado": "Inactivo"
+    "estado": "Emergencia"
   },
   {
     "nombre": "Pozo 10",
@@ -87,7 +87,7 @@
     "nombre": "Pozo 15",
     "lat": -26.785686,
     "lng": -65.230786,
-    "estado": "Inactivo"
+    "estado": "Emergencia"
   },
   {
     "nombre": "Pozo 16",
@@ -111,7 +111,7 @@
     "nombre": "Pozo 19",
     "lat": -26.868964,
     "lng": -65.236589,
-    "estado": "Inactivo"
+    "estado": "Activo"
   },
   {
     "nombre": "Pozo 20",

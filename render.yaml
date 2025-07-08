@@ -1,0 +1,8 @@
+services:
+  - type: web                      # Indica que estamos creando un servicio web
+    name: flask-app                # Nombre del servicio (podés cambiarlo si querés)
+    env: python                    # Especifica que es un entorno Python
+    buildCommand: ""              # No se necesita ningún comando de construcción especial
+    startCommand: gunicorn app:app  # Comando que ejecuta la app: gunicorn usa app.py y la instancia "app"
+    plan: free                     # Usa el plan gratuito de Render
+    runtime: python                # Usa el entorno de ejecución Python
